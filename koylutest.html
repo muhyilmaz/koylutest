@@ -1,0 +1,219 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Köylü Testi - Samimiyet Ölçer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #f4f1ea;
+            background-image: url("https://www.transparenttextures.com/patterns/papyrus.png");
+        }
+        .header-font {
+            font-family: 'Playfair Display', serif;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        .option-btn {
+            transition: all 0.2s ease;
+            border: 2px solid #d1ccbc;
+        }
+        .option-btn:hover {
+            background-color: #8b7355;
+            color: white;
+            border-color: #8b7355;
+        }
+        .option-btn.selected {
+            background-color: #5d4037;
+            color: white;
+            border-color: #5d4037;
+        }
+        #progress-bar {
+            transition: width 0.5s ease-in-out;
+        }
+        .hidden { display: none; }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div id="quiz-container" class="max-w-2xl w-full card p-8">
+        <!-- Start Screen -->
+        <div id="start-screen" class="text-center">
+            <h1 class="header-font text-4xl text-amber-900 mb-4">Gerçek Köylü Testi</h1>
+            <p class="text-gray-700 mb-8 italic">"Köylü milletin efendisidir!" Samimiyetin, emeğin ve toprağın kokusunu ne kadar iyi biliyorsun?</p>
+            <button onclick="startQuiz()" class="bg-amber-800 hover:bg-amber-900 text-white font-bold py-3 px-10 rounded-full text-lg shadow-lg transition">
+                Testi Başlat
+            </button>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="hidden">
+            <div class="flex justify-between items-center mb-6">
+                <span id="question-number" class="text-amber-800 font-bold uppercase tracking-wider">Soru 1/10</span>
+                <div class="w-1/2 bg-gray-200 h-2 rounded-full">
+                    <div id="progress-bar" class="bg-amber-600 h-2 rounded-full" style="width: 10%"></div>
+                </div>
+            </div>
+            
+            <h2 id="question-text" class="text-xl font-bold text-gray-800 mb-6 leading-tight"></h2>
+            
+            <div id="options-container" class="space-y-4">
+                <!-- Options will be injected here -->
+            </div>
+            
+            <div class="mt-8 flex justify-end">
+                <button id="next-btn" onclick="nextQuestion()" class="bg-gray-400 text-white px-8 py-2 rounded-lg font-bold cursor-not-allowed" disabled>
+                    Sonraki
+                </button>
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="result-screen" class="hidden text-center">
+            <h2 class="header-font text-3xl text-amber-900 mb-4">Test Tamamlandı!</h2>
+            <div class="text-5xl font-bold text-amber-600 mb-4" id="score-text">0/10</div>
+            <p id="result-message" class="text-lg text-gray-700 mb-8 font-medium"></p>
+            <button onclick="location.reload()" class="border-2 border-amber-800 text-amber-800 hover:bg-amber-800 hover:text-white font-bold py-2 px-8 rounded-lg transition">
+                Tekrar Çöz
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                q: 'Sabahın ilk ışıklarında kapının önünde "Vira vira!" ya da "Hadi bakayım!" seslerini duyduysan ne oluyordur?',
+                options: ['Komşular kahveye çağırıyordur.', 'Hayvanlar otlağa çıkıyordur.', 'Köyde düğün başlıyordur.'],
+                correct: 1
+            },
+            {
+                q: 'Bahçede ya da tarlada çalışırken susadın. Elinde sadece bir testi var. Suyu nasıl içersin?',
+                options: ['Bardağa doldurup kibarca.', 'Testiyi havaya kaldırıp, ağzına değdirmeden "dikleyerek".', 'Suyu avucuna dökerek.'],
+                correct: 1
+            },
+            {
+                q: 'Diz boyu çamurlu bir yolda yürürken ayağında ne vardır?',
+                options: ['Marka bir spor ayakkabı.', 'Altı çivili kundura.', 'Kara lastik (Gislaved).'],
+                correct: 2
+            },
+            {
+                q: 'Akşam oturmasında sobanın üzerine ne atılırsa odanın kokusu bir anda güzelleşir?',
+                options: ['Parfüm.', 'Portakal/mandalina kabuğu.', 'Çamaşır suyu.'],
+                correct: 1
+            },
+            {
+                q: 'Aşağıdaki bitkilerden hangisiyle temas edersen tenin yanar ve kaşınmaya başlarsın?',
+                options: ['Isırgan otu.', 'Madımak.', 'Semizotu.'],
+                correct: 0
+            },
+            {
+                q: 'Misafirliğe gittiğinde önünde duran tepside "çatal" yoksa ve sadece yufka ekmek varsa ne yaparsın?',
+                options: ['Çatal istersin.', 'Ekmeği "bişim" (dürüm/kaşık) yapıp yemeğe banarsın.', 'Yemekten vazgeçersin.'],
+                correct: 1
+            },
+            {
+                q: 'Harman zamanı rüzgarın esmesi neden hayati önem taşır?',
+                options: ['Serinlemek için.', 'Sapla samanı (tane ile çöpleri) birbirinden ayırmak için.', 'Çamaşırların kuruması için.'],
+                correct: 1
+            },
+            {
+                q: '"Gıdıklamak" değil de "gıdılamak" ne anlama gelir?',
+                options: ['Birini güldürmek.', 'Hayvanları ahıra sokmak veya yemlemek.', 'Odun kırmak.'],
+                correct: 1
+            },
+            {
+                q: 'Birisi sana "Ekinler boy verdi" diyorsa ne demek istiyordur?',
+                options: ['Boyu kadar ekin bitmiş.', 'Bu sene hasat bol olacak, ekinler uzadı.', 'Ekinler kurumaya başladı.'],
+                correct: 1
+            },
+            {
+                q: 'Köy kahvesinde otururken masaya birisi gelip "Selamunaleyküm" dediğinde ne yapman gerekir?',
+                options: ['Sadece kafanı sallarsın.', 'Hep beraber "Aleykümselam" diyerek karşılık verirsin.', 'Telefonunla oynamaya devam edersin.'],
+                correct: 1
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let selectedOption = null;
+
+        function startQuiz() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const question = questions[currentQuestion];
+            document.getElementById('question-number').innerText = `Soru ${currentQuestion + 1}/${questions.length}`;
+            document.getElementById('question-text').innerText = question.q;
+            document.getElementById('progress-bar').style.width = `${((currentQuestion + 1) / questions.length) * 100}%`;
+            
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+            
+            question.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn w-full text-left p-4 rounded-xl font-medium';
+                btn.innerText = opt;
+                btn.onclick = () => selectOption(index, btn);
+                container.appendChild(btn);
+            });
+
+            selectedOption = null;
+            const nextBtn = document.getElementById('next-btn');
+            nextBtn.disabled = true;
+            nextBtn.classList.replace('bg-amber-600', 'bg-gray-400');
+            nextBtn.classList.add('cursor-not-allowed');
+        }
+
+        function selectOption(index, btn) {
+            selectedOption = index;
+            document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            
+            const nextBtn = document.getElementById('next-btn');
+            nextBtn.disabled = false;
+            nextBtn.classList.replace('bg-gray-400', 'bg-amber-600');
+            nextBtn.classList.remove('cursor-not-allowed');
+        }
+
+        function nextQuestion() {
+            if (selectedOption === questions[currentQuestion].correct) {
+                score++;
+            }
+            
+            currentQuestion++;
+            
+            if (currentQuestion < questions.length) {
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+            
+            document.getElementById('score-text').innerText = `${score}/${questions.length}`;
+            
+            let message = "";
+            if (score === 10) message = "Sen tam bir köy ağasısın! Toprak seni, sen toprağı tanıyorsun. Şehir seni bozamaz.";
+            else if (score >= 7) message = "Yaz tatillerini köyde geçirmişsin, mayan sağlam. Kokuyu alınca hemen hatırlıyorsun.";
+            else if (score >= 4) message = "Kasaba çocuğu kıvamındasın. Köyü biliyorsun ama çamura girmeyi pek sevmiyorsun.";
+            else message = "Sen tam bir şehirli 'plaza insanı' olmuşsun. Acilen temiz hava ve temiz süte ihtiyacın var!";
+            
+            document.getElementById('result-message').innerText = message;
+        }
+    </script>
+</body>
+</html>
